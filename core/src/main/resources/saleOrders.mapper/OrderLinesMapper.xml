@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ #{copyright}#
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="hbi.core.sale.mapper.OrderLinesMapper">
+    <!--向订单行中插入数据-->
+    <insert id="addOrderLine" parameterType="hbi.core.sale.dto.OrderLines">
+        insert into hap_om_order_lines(HEADER_ID,LINE_NUMBER,INVENTORY_ITEM_ID,ORDER_QUANTITY_UOM,ORDERD_QUANTITY,UNIT_SELLING_PRICE,DESCRIPTION,COMPANY_ID)
+        values(#{headerId},#{lineNumber},(select INVENTORY_ITEM_ID from hap_inv_inventory_items where ITEM_CODE=#{itemCode}),#{orderQuantityUom},#{orderdQuantity},#{unitSellingPrice},#{description},#{companyId})
+    </insert>
+
+    <!--查询最大的lineNumber-->
+    <select id="selectMaxLineNumber" resultType="long">
+      select max(line_number) from hap_om_order_lines
+    </select>
+
+    <!--根据订单行号删除订单行-->
+    <delete id="deleteByLineNum" parameterType="hbi.core.sale.dto.OrderLines">
+        delete from hap_om_order_lines where line_number=#{lineNumber}
+    </delete>
+</mapper>

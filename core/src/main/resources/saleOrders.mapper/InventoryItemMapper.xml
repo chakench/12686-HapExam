@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ #{copyright}#
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="hbi.core.sale.mapper.InventoryItemMapper">
+
+    <!--根据itemCode查找inventoryItemId-->
+    <select id="findIdByCode" parameterType="string" resultType="long">
+        select INVENTORY_ITEM_ID from hap_inv_inventory_items where ITEM_CODE=#{itemCode}
+    </select>
+</mapper>

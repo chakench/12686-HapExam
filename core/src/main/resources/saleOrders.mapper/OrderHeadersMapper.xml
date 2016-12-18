@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ #{copyright}#
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="hbi.core.sale.mapper.OrderHeadersMapper">
+    <!--向订单头中插入数据-->
+    <insert id="addOrderHeader" parameterType="map" useGeneratedKeys="true" keyProperty="headerId" >
+        insert into hap_om_order_headers(order_number,COMPANY_ID,CUSTOMER_ID,ORDER_DATE,ORDER_STATUS)
+        values(#{orderNumber},(select company_id from hap_org_companys where company_name=#{companyName}),(select customer_id from hap_ar_customers where customer_name=#{customerName}),#{orderDate},'NEW')
+    </insert>
+
+    <!--订单详情结果映射-->
+    <resultMap id="ordersResult" type="hbi.core.sale.dto.OrderLines">
+        <id property="lineId" column="line_id"/>
+        <result property="lineNumber" column="line_number"/>
+        <result property="headerId" column="header_id"/>
+        <result property="inventoryItemId" column="inventory_item_id"/>
+        <result property="orderdQuantity" column="orderd_quantity"/>
+        <result property="orderQuantityUom" column="order_quantity_uom"/>
+        <result property="unitSellingPrice" column="unit_selling_price"/>
+        <result property="description" column="description"/>
+        <result property="totalPrice" column="totalPrice"/>
+        <result property="companyId" column="company_id"/>
+        <association property="companys" column="company_id" javaType="hbi.core.sale.dto.Companys">
+            <id property="companyId" column="company_id"/>
+            <result property="companyName" column="companyName"/>
+        </association>
+        <association property="customers" column="customer_id" javaType="hbi.core.sale.dto.Customers">
+            <id property="customerId" column="customer_id"/>
+            <result property="customerName" column="customerName"/>
+        </association>
+        <association property="orderHeaders" column="header_id" javaType="hbi.core.sale.dto.OrderHeaders">
+            <id property="headerId" column="header_id"/>
+            <result property="orderDate" column="orderDate"/>
+            <result property="orderStatus" column="orderStatus"/>
+            <result property="orderNumber" column="orderNumber"/>
+        </association>
+        <association property="inventoryItem" column="INVENTORY_ITEM_ID" javaType="hbi.core.sale.dto.InventoryItem">
+            <id property="inventoryItemId" column="INVENTORY_ITEM_ID"/>
+            <result property="itemCode" column="itemCode"/>
+            <result property="itemDescription" column="item_description"/>
+        </association>
+    </resultMap>
+    <!--查询订单详情     使用resultMap可以查出所有详情，由于前端有点小BUG,就换成了resultType(中间DTO表)-->
+    <select id="findOrders" resultType="hbi.core.sale.dto.OrderInfo">
+        select * from(select head.order_number orderNumber,com.company_name companyName,com.company_id,cus.customer_id,head.header_id,cus.customer_name customerName,head.order_date orderDate,
+        head.order_status orderStatus,line.orderd_quantity*line.UNIT_SELLING_PRICE totalPrice,item.item_code itemCode,line.LINE_NUMBER lineNumber,item.ITEM_DESCRIPTION itemDescription,
+	line.ORDER_QUANTITY_UOM orderQuantityUom,line.ORDERD_QUANTITY orderdQuantity,line.UNIT_SELLING_PRICE unitSellingPrice,line.DESCRIPTION
+        from hap_org_companys com,hap_ar_customers cus,hap_om_order_headers head,hap_om_order_lines line,hap_inv_inventory_items item where head.company_id=com.company_id and head.customer_id=cus.customer_id
+        and head.header_id=line.header_id and item.inventory_item_id=line.inventory_item_id) t where orderNumber=#{orderNumber}
+    </select>
+
+    <select id="findMaxId" resultType="long">
+        select max(t.header_id) from hap_om_order_headers t
+    </select>
+</mapper>

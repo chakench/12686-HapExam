@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ #{copyright}#
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="hbi.core.sale.mapper.CompanysMapper">
+    <resultMap id="allInfo" type="hbi.core.sale.dto.Companys">
+        <id property="companyId" column="company_id"/>
+        <result property="companyName" column="company_name"/>
+        <collection property="customersList" ofType="hbi.core.sale.dto.Customers">
+            <id property="customerId" column="customer_id"/>
+            <result property="customerName" column="customer_name"/>
+        </collection>
+        <collection property="orderHeadersList" ofType="hbi.core.sale.dto.OrderHeaders">
+            <id property="headerId" column="header_id"/>
+            <result property="orderNumber" column="order_number"/>
+            <result property="orderDate" column="order_date"/>
+            <result property="orderStatus" column="order_status"/>
+        </collection>
+        <collection property="orderLinesList" ofType="hbi.core.sale.dto.OrderLines">
+            <id property="lineId" column="line_id"/>
+            <result property="totalPrice" column="totalPrice"/>
+        </collection>
+        <collection property="inventoryItems" ofType="hbi.core.sale.dto.InventoryItem">
+            <id property="inventoryItemId" column="inventory_item_id"/>
+            <result property="itemCode" column="item_code"/>
+        </collection>
+    </resultMap>
+
+    <!--查询订单信息-->
+    <select id="findAll"  parameterType="hbi.core.sale.dto.OrderInfo" resultType="hbi.core.sale.dto.OrderInfo">
+        select * from(select head.order_number orderNumber,com.company_name companyName,cus.customer_name customerName,head.order_date orderDate,
+        head.order_status orderStatus,line.orderd_quantity*line.UNIT_SELLING_PRICE totalPrice,item.item_code itemCode
+        from hap_org_companys com,hap_ar_customers cus,hap_om_order_headers head,hap_om_order_lines line,hap_inv_inventory_items item where head.company_id=com.company_id and head.customer_id=cus.customer_id
+        and head.header_id=line.header_id and item.inventory_item_id=line.inventory_item_id) t
+    <where>
+        <if test="companyName!=null and companyName!=''">
+            companyName=#{companyName}
+        </if>
+        <if test="customerName!=null and customerName!=''">
+           and customerName=#{customerName}
+        </if>
+        <if test="orderNumber!=null and orderNumber!=''">
+           and orderNumber=#{orderNumber}
+        </if>
+        <if test="orderStatus!=null and orderStatus!=''">
+            and orderStatus=#{orderStatus}
+        </if>
+        <if test="itemCode!=null and itemCode!=''">
+            and itemCode=#{itemCode}
+        </if>
+    </where>
+        <if test="page!=null and pageSize!=null">
+            limit #{page},#{pageSize}
+        </if>
+    </select>
+
+    <!--根据公司名字查找公司id-->
+    <select id="findCompanyIdByName" parameterType="string" resultType="long">
+        select company_id from hap_org_companys where company_name=#{companyName}
+    </select>
+</mapper>

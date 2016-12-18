@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ #{copyright}#
+  -->
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="hbi.core.sale.mapper.CustomersMapper">
+    <!--关联查询客户信息-->
+    <select id="findCustomer" parameterType="Long" resultType="hbi.core.sale.dto.Customers">
+        select customer_number,customer_name from hap_ar_customers cus,hap_org_companys com where cus.company_id=com.company_id
+        <where>
+            <if test="companyId!=null and companyId!=''">
+                cus.company_id=#{companyId}
+            </if>
+        </where>
+    </select>
+
+
+</mapper>
